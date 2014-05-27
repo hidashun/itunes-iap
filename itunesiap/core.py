@@ -43,6 +43,7 @@ class Request(object):
         self.use_sandbox = kwargs.get('use_sandbox', USE_SANDBOX)
         self.response = None
         self.result = None
+        self.password = kwargs.get('password', None)
 
     def __repr__(self):
         valid = None
@@ -52,7 +53,10 @@ class Request(object):
 
     def verify_from(self, url):
         """Try verification from given url."""
-        self.response = requests.post(url, json.dumps({'receipt-data': self.receipt}), verify=False)
+        data_dict = {'receipt-data': self.receipt}
+        if self.password:
+            data_dict['password'] = self.password
+        self.response = requests.post(url, json.dumps(data_dict), verify=False)
         if self.response.status_code != 200:
             raise exceptions.ItunesServerNotAvailable(self.response.status_code, self.response.content)
         self.result = json.loads(self.response.content)
